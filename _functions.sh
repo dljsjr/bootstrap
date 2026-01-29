@@ -79,6 +79,7 @@ linebreak() {
     PRINTED=false
 }
 
+#-BEGIN:${SCRIPTDIR}/_functions.d
 for funcdef in "${SCRIPTDIR}/_functions.d"/*
 do
     if [ -f "$funcdef" ]
@@ -87,3 +88,4 @@ do
         . "$funcdef"
     fi
 done
+#-END:${SCRIPTDIR}/_functions.d

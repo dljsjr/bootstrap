@@ -8,10 +8,12 @@ export WORKDIR
 SCRIPTDIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && /bin/pwd -P)"
 export SCRIPTDIR
 
+#-BEGIN:$SCRIPTDIR/_functions.sh
 # source helper functions script
 # shellcheck source=_functions.sh
 . "$SCRIPTDIR/_functions.sh"
 linebreak
+#-END:_functions.sh
 
 usage() {
     cat <<EOF
@@ -205,6 +207,7 @@ export CPU_ARCH
 MACHINE="${OS_FLAVOR}_${CPU_ARCH}"
 export MACHINE
 
+#-BEGIN:${SCRIPTDIR}/bootstrap.d
 ## Beging sourcing of additional config files. Files are sourced in the following order:
 ##
 ## 1. bootstrap.d/*.sh (alphabetically)
@@ -221,9 +224,12 @@ then
         cd "$WORKDIR" || abort "Unexpected error"
     done
 fi
+#-END:${SCRIPTDIR}/bootstrap.d
 
 OS_FLAVOR_CONFDIR="$SCRIPTDIR/${OS_FLAVOR}"
 export OS_FLAVOR_CONFDIR
+
+#-BEGIN:$OS_FLAVOR_CONFDIR
 if [ -d "$OS_FLAVOR_CONFDIR" ]
 then
     info "Found machine-specific boostrap configuration for ${BOLD}%s${RESET}" "$OS_FLAVOR"
@@ -255,6 +261,7 @@ then
 else
     warn "No machine-specific boostrap configuration for %s" "$OS_FLAVOR"
 fi
+#-END:$OS_FLAVOR_CONFDIR
 
 cd "$WORKDIR" || abort "Unexpected error"
 
