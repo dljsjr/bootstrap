@@ -1,0 +1,3 @@
+# The global gitignore excludes dist/ as build output, but here the baked
+# dist scripts are published artifacts served via raw.githubusercontent.com.
+!dist/

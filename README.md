@@ -28,7 +28,27 @@ This script does a small handful of things:
 
 ## Usage
 
-### Quick Start
+### Quick Start (`curl | sh`, no clone needed)
+
+Single-file bundles of the bootstrap are baked per-OS/arch into `dist/` and served straight from
+the repo. `bootstrap-dist.sh` is the stable entrypoint: it detects the machine flavor and runs the
+matching dist bundle.
+
+```shell
+/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/bootstrap-dist.sh)"
+```
+
+To pass flags, fetch the machine-specific bundle directly and run it:
+
+```shell
+curl -fsSLO https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/dist/bootstrap-linux_amd64.sh
+sh bootstrap-linux_amd64.sh -d dljsjr/dotfiles
+```
+
+The bundles are produced by `make_dist.sh` (see below); regenerate and commit them whenever the
+scripts change.
+
+### Quick Start (from a clone)
 
 1. Clone the repo
 2. Ensure the main `bootstrap.sh` file in the repo root is executable
@@ -47,6 +67,22 @@ Use `./bootstrap.sh --help` for more information on configuring behavior.
 If a tool has its own installer, and that's the installtion method that is used, then you *should* likely be able
 to use that installer's env var options as well. See the install documentation for individual tools for more
 information.
+
+## Distribution Bundling
+
+`make_dist.sh` walks `bootstrap.sh` and inlines everything between `#-BEGIN:`/`#-END:` markers —
+the `_functions` utilities, the common `bootstrap.d/` steps, and the OS-specific
+`<os>/bootstrap.sh` + `<os>/bootstrap.d/` — into a single self-contained script at
+`dist/bootstrap-<os>_<arch>.sh`. Files marked `#-DIST_IGNORE` are skipped. It also regenerates
+`bootstrap-dist.sh`, the machine-detecting `curl | sh` entrypoint.
+
+```shell
+sh make_dist.sh --os linux --arch amd64
+sh make_dist.sh --os darwin --arch arm64
+```
+
+The `dist/` outputs are committed on purpose (they're fetched via `raw.githubusercontent.com`);
+the repo-local `.gitignore` re-includes `dist/` against any global `dist/` ignore rule.
 
 ## Internals Overview
 
