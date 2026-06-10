@@ -5,7 +5,7 @@ set -eu
 WORKDIR="$(/bin/pwd -P)"
 export WORKDIR
 
-SCRIPTDIR="$(cd "$(dirname "$0")" >/dev/null 2>&1 && /bin/pwd -P)"
+SCRIPTDIR="$(cd "$(dirname -- "$0")" >/dev/null 2>&1 && /bin/pwd -P)"
 export SCRIPTDIR
 
 
@@ -654,6 +654,21 @@ cd "$WORKDIR" || abort "Unexpected error"
 # Our SSH keys should have been extracted from our 1P vault.
 #
 # We can now clone our dotfiles from GitHub and apply them with Chezmoi, or start up new dotfiles.
+
+# `chezmoi init <repo>` will NOT (re-)clone into an existing source directory,
+# so a stray or empty one (e.g. left behind by an earlier argless run) makes
+# init silently no-op. Fail loudly instead.
+CHEZMOI_EFFECTIVE_SOURCEDIR="${CHEZMOI_SOURCEDIR:-${XDG_DATA_HOME:-$HOME/.local/share}/chezmoi}"
+if [ -n "$CHEZMOI_DOTFILES_ARG" ] && [ -d "$CHEZMOI_EFFECTIVE_SOURCEDIR" ]
+then
+    if git -C "$CHEZMOI_EFFECTIVE_SOURCEDIR" rev-parse HEAD >/dev/null 2>&1
+    then
+        warn "chezmoi source dir ${BOLD}%s${RESET} already exists with history; init will reuse it instead of cloning '%s'" "$CHEZMOI_EFFECTIVE_SOURCEDIR" "$CHEZMOI_DOTFILES_ARG"
+    else
+        abort "chezmoi source dir %s exists but has no commits; 'chezmoi init %s' would silently no-op. Run 'chezmoi purge --force' (or remove the directory) and re-run." "$CHEZMOI_EFFECTIVE_SOURCEDIR" "$CHEZMOI_DOTFILES_ARG"
+    fi
+fi
+
 if [ -n "$CHEZMOI_SOURCEDIR" ]
 then
     CHEZMOI_CMD="chezmoi --source $CHEZMOI_SOURCEDIR init"
