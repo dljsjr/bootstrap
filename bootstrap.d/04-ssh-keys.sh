@@ -37,28 +37,36 @@ info "Signing in to 1Password CLI"
 if [ -n "$OP_PASSWORD" ]
 then
     eval "$(echo "$OP_PASSWORD" | op signin)"
-    
+
 else
     eval "$(op signin)"
 fi
 
 info "Downloading SSH Keys to ${BOLD}\$HOME/.ssh${RESET}"
-# we don't use JSON output because we're trying to avoid installing JQ during
-# bootstrap, so we use cut and tr instead.
-op --no-color item list --categories 'SSH Key' | tail -n +2 | while IFS= read -r item
-do
-    title="$(echo "$item" | tr -s ' ' | cut -d ' ' -f2 | tr -s '[:blank:]' '_')"
-    vault="$(echo "$item" | tr -s ' ' | cut -d ' ' -f3)"
+mkdir -p "$HOME"/.ssh
 
-    mkdir -p "$HOME"/.ssh
+# Item titles can contain spaces, so the tabular `op item list` output can't
+# be split on whitespace reliably; use JSON output instead. python3 keeps us
+# jq-free (present on macOS once the CLT are installed, and on Ubuntu by
+# default). Items are addressed by ID in the secret references, with the
+# snake_cased title used only for the on-disk filename.
+ensure python3 "needed to parse 'op item list' JSON output"
+
+op item list --categories 'SSH Key' --format=json | python3 -c '
+import json, sys
+for item in json.load(sys.stdin):
+    title = "_".join(item["title"].split())
+    print("\t".join((item["id"], title, item["vault"]["id"])))
+' | while IFS="$(rawprint '\t')" read -r item_id title vault_id
+do
     if [ ! -f "$HOME/.ssh/${title}.pub" ]
     then
-        op read --out-file "$HOME/.ssh/${title}.pub" "op://${vault}/${title}/public key"
+        op read --out-file "$HOME/.ssh/${title}.pub" "op://${vault_id}/${item_id}/public key"
     fi
-    
+
     if [ ! -f "$HOME/.ssh/${title}" ] && [ "$DOWNLOAD_PRIVATE_KEYS" = 1 ]
     then
-        op read --out-file "$HOME/.ssh/${title}" "op://${vault}/${title}/private key"
+        op read --out-file "$HOME/.ssh/${title}" "op://${vault_id}/${item_id}/private key"
     fi
 
 done
