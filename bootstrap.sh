@@ -30,7 +30,7 @@ Usage: bootstrap.sh [options]
     --overlay <OVERLAY_REPO>        (Optional) Git URL of a chezmoi overlay source repo. Cloned to the overlay directory (see
                                     '--overlay-dir') and applied with 'chezmoi apply -S <dir>' after the main dotfiles, unless
                                     '--no-apply' is set.
-    --overlay-dir <OVERLAY_DIR>     Directory to clone the overlay repo into, defaults to \$HOME/git/@vultr/dotfiles
+    --overlay-dir <OVERLAY_DIR>     Directory to clone the overlay repo into, defaults to \$HOME/git/dotfiles-overlay
 
     --brew-mise                     Install mise from homebrew instead of its install script
 
@@ -63,7 +63,7 @@ CHEZMOI_APPLY=1
 
 # overlay args
 OVERLAY_REPO=""
-OVERLAY_DIR="$HOME/git/@vultr/dotfiles"
+OVERLAY_DIR="$HOME/git/dotfiles-overlay"
 
 # mise setup args
 BREW_MISE=0

@@ -272,6 +272,6 @@ export DOWNLOAD_PRIVATE_KEYS
 # Optional, Git URL of a chezmoi overlay source repo, cloned and applied with `chezmoi apply -S` after the main dotfiles
 export OVERLAY_REPO
 
-# Directory the overlay repo is cloned into (default $HOME/git/@vultr/dotfiles)
+# Directory the overlay repo is cloned into (default $HOME/git/dotfiles-overlay)
 export OVERLAY_DIR
 ```
