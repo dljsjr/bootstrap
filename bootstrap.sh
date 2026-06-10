@@ -27,6 +27,10 @@ Usage: bootstrap.sh [options]
     -S, --source <SOURCE_DIR>       Directory to use as the source dir (where the dotfiles will be cloned), passed to chezmoi with the
                                     '-S|--source'.
     --no-apply                      Do not pass '--apply' to 'chezmoi init'
+    --overlay <OVERLAY_REPO>        (Optional) Git URL of a chezmoi overlay source repo. Cloned to the overlay directory (see
+                                    '--overlay-dir') and applied with 'chezmoi apply -S <dir>' after the main dotfiles, unless
+                                    '--no-apply' is set.
+    --overlay-dir <OVERLAY_DIR>     Directory to clone the overlay repo into, defaults to \$HOME/git/@vultr/dotfiles
 
     --brew-mise                     Install mise from homebrew instead of its install script
 
@@ -54,8 +58,12 @@ MISE_CHEZMOI=0
 PURGE=0
 PURGE_BINARY=0
 CHEZMOI_DOTFILES_ARG=""
-CHEZMOID_SOURCEDIR=""
+CHEZMOI_SOURCEDIR=""
 CHEZMOI_APPLY=1
+
+# overlay args
+OVERLAY_REPO=""
+OVERLAY_DIR="$HOME/git/@vultr/dotfiles"
 
 # mise setup args
 BREW_MISE=0
@@ -79,11 +87,19 @@ while [ $# -gt 0 ]; do
         shift
         ;;
     -S | --source)
-        CHEZMOID_SOURCEDIR="$2"
+        CHEZMOI_SOURCEDIR="$2"
         shift
         ;;
     --no-apply)
         CHEZMOI_APPLY=0
+        ;;
+    --overlay)
+        OVERLAY_REPO="$2"
+        shift
+        ;;
+    --overlay-dir)
+        OVERLAY_DIR="$2"
+        shift
         ;;
     -p | --purge)
         PURGE=1
@@ -168,8 +184,11 @@ trap cleanup EXIT HUP INT QUIT ABRT TERM
 
 export DLDIR
 export CHEZMOI_DOTFILES_ARG
+export CHEZMOI_SOURCEDIR
 export CHEZMOI_INSTALL_PATH
 export CHEZMOI_APPLY
+export OVERLAY_REPO
+export OVERLAY_DIR
 export PURGE
 export PURGE_BINARY
 export BREW_MISE
@@ -185,9 +204,7 @@ export OP_SECRET_KEY
 export DOWNLOAD_PRIVATE_KEYS
 
 # ensure local bin:
-if [ -d "$HOME/.local/bin" ]; then
-    mkdir -p "$HOME/.local/bin" >/dev/null 2>&1 || exit
-fi
+mkdir -p "$HOME/.local/bin" >/dev/null 2>&1 || exit
 
 prepend_path "$HOME/.local/bin"
 export PATH
@@ -269,9 +286,9 @@ cd "$WORKDIR" || abort "Unexpected error"
 # Our SSH keys should have been extracted from our 1P vault.
 #
 # We can now clone our dotfiles from GitHub and apply them with Chezmoi, or start up new dotfiles.
-if [ -n "$CHEZMOID_SOURCEDIR" ]
+if [ -n "$CHEZMOI_SOURCEDIR" ]
 then
-    CHEZMOI_CMD="chezmoi --source $CHEZMOID_SOURCEDIR init"
+    CHEZMOI_CMD="chezmoi --source $CHEZMOI_SOURCEDIR init"
 else
     CHEZMOI_CMD="chezmoi init"
 fi
@@ -299,3 +316,28 @@ fi
 info "Boostrapping dotfiles with command ${CYAN}[%s]${RESET}" "$CHEZMOI_CMD"
 linebreak
 eval "$CHEZMOI_CMD"
+
+# Overlay sources (e.g. work dotfiles layered over the core repo) are applied
+# with a second `chezmoi apply -S`. This has to live here in bootstrap because
+# the `updot` helper that normally drives the two-source apply is itself a file
+# managed by the overlay.
+if [ -n "$OVERLAY_REPO" ]
+then
+    linebreak
+    if ! [ -d "$OVERLAY_DIR" ]
+    then
+        ensure git "required to clone the overlay repo"
+        info "Cloning overlay repo ${CYAN}%s${RESET} to ${BOLD}%s${RESET}" "$OVERLAY_REPO" "$OVERLAY_DIR"
+        mkdir -p "$(dirname "$OVERLAY_DIR")"
+        git clone "$OVERLAY_REPO" "$OVERLAY_DIR" || abort "failed to clone overlay repo"
+    fi
+
+    if [ "$CHEZMOI_APPLY" = 1 ]
+    then
+        info "Applying overlay dotfiles with command ${CYAN}[chezmoi apply -S %s]${RESET}" "$OVERLAY_DIR"
+        linebreak
+        chezmoi apply -S "$OVERLAY_DIR"
+    else
+        info "Skipping overlay apply (--no-apply); run ${CYAN}chezmoi apply -S %s${RESET} when ready" "$OVERLAY_DIR"
+    fi
+fi
