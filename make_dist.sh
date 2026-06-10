@@ -117,7 +117,7 @@ doDistInline() (
 )
 
 mkdir -p "${SCRIPTDIR}/dist"
-OUTFILE="${SCRIPTDIR}/dist/boostrap-${MACHINE}.sh"
+OUTFILE="${SCRIPTDIR}/dist/bootstrap-${MACHINE}.sh"
 printf "creating dist %s\n" "$OUTFILE"
 
 rawprint "#!/usr/bin/env sh\n" > "$OUTFILE"
@@ -134,5 +134,5 @@ rawprint() {
 $(tail -n +2 "${SCRIPTDIR}"/_functions.d/01-os_utils.sh)
 
 MACHINE="\$(os_flavor)_\$(cpu_arch)"
-/bin/sh -c "\$(curl -fsSL "https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/dist/boostrap-\${MACHINE}.sh")"
+/bin/sh -c "\$(curl -fsSL "https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/dist/bootstrap-\${MACHINE}.sh")"
 EOF

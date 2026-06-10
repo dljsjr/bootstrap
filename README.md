@@ -24,6 +24,7 @@ This script does a small handful of things:
 5. Export SSH keys from 1Password (via the CLI) to local disk
 6. Ensures that `chezmoi` (<https://www.chezmoi.io/>) is installed
 7. Bootstraps `chezmoi` dotfiles or grab (and optionally apply) `chezmoi` dotfiles from a provided location
+8. Optionally clones and applies a `chezmoi` overlay source repo (`--overlay`) on top of the main dotfiles
 
 ## Usage
 
@@ -178,6 +179,9 @@ export MACHINE
 # The positional argument that will be passed to `chezmoi init`
 export CHEZMOI_DOTFILES_ARG
 
+# Optional, directory passed to `chezmoi` with `-S|--source` as the source dir for the main dotfiles
+export CHEZMOI_SOURCEDIR
+
 # Directory to install the `chezmoi` binary when using the curl | sh installation method
 export CHEZMOI_INSTALL_PATH
 
@@ -222,4 +226,10 @@ export OP_SECRET_KEY
 
 # 0 or 1, whether or not to download SSH private keys to disk in addition to the public keys (default 0)
 export DOWNLOAD_PRIVATE_KEYS
+
+# Optional, Git URL of a chezmoi overlay source repo, cloned and applied with `chezmoi apply -S` after the main dotfiles
+export OVERLAY_REPO
+
+# Directory the overlay repo is cloned into (default $HOME/git/@vultr/dotfiles)
+export OVERLAY_DIR
 ```
