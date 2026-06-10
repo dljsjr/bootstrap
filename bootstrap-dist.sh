@@ -29,4 +29,4 @@ cpu_arch() {
 }
 
 MACHINE="$(os_flavor)_$(cpu_arch)"
-/bin/sh -c "$(curl -fsSL "https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/dist/bootstrap-${MACHINE}.sh")"
+/bin/sh -c "$(curl -fsSL "https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/dist/bootstrap-${MACHINE}.sh")" -- "$@"

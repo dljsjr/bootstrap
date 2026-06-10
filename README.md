@@ -38,7 +38,13 @@ matching dist bundle.
 /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/bootstrap-dist.sh)"
 ```
 
-To pass flags, fetch the machine-specific bundle directly and run it:
+Flags pass through after a `--` (consumed as `$0`) and are forwarded to the bundle:
+
+```shell
+/bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/bootstrap-dist.sh)" -- -d dljsjr/dotfiles
+```
+
+Or fetch the machine-specific bundle directly and run it:
 
 ```shell
 curl -fsSLO https://raw.githubusercontent.com/dljsjr/bootstrap/refs/heads/main/dist/bootstrap-linux_amd64.sh
