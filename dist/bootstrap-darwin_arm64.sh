@@ -150,7 +150,7 @@ ensure_brew() {
     if [ -x "$1"/bin/brew ]
     then
         info "found existing Homebrew installation, ensuring shellenv"
-        eval "$("$1"/bin/brew shellenv)"
+        eval "$("$1"/bin/brew shellenv sh)"
     fi
 
     if ! command -v brew >/dev/null 2>&1
@@ -169,7 +169,7 @@ ensure_brew() {
         printf "\n"
         sudo -v
         NONINTERACTIVE=1 ./install.sh || abort "Failed to run homebrew installer"
-        eval "$("$1"/bin/brew shellenv)"
+        eval "$("$1"/bin/brew shellenv sh)"
     fi
 
     cd "$WORKDIR" || exit
@@ -430,7 +430,7 @@ then
         info "running mise install script"
         printf "\n"
         MISE_INSTALL_PATH="$MISE_INSTALL_PATH" ./install.sh || abort "failed to run mise installer"
-        eval "$("$MISE_INSTALL_PATH" activate --shims)"
+        eval "$("$MISE_INSTALL_PATH" activate --shims bash)"
         cd "$WORKDIR" || abort "unexpected error"
     fi
 fi
@@ -438,7 +438,7 @@ fi
 ensure mise
 
 # activating shims is idempotent
-eval "$(mise activate --shims)"
+eval "$(mise activate --shims bash)"
 
 prepend_path "$OP_CLI_INSTALL_PATH"
 

@@ -24,7 +24,7 @@ then
         info "running mise install script"
         printf "\n"
         MISE_INSTALL_PATH="$MISE_INSTALL_PATH" ./install.sh || abort "failed to run mise installer"
-        eval "$("$MISE_INSTALL_PATH" activate --shims)"
+        eval "$("$MISE_INSTALL_PATH" activate --shims bash)"
         cd "$WORKDIR" || abort "unexpected error"
     fi
 fi
@@ -32,4 +32,4 @@ fi
 ensure mise
 
 # activating shims is idempotent
-eval "$(mise activate --shims)"
+eval "$(mise activate --shims bash)"

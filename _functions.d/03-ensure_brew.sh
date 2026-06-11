@@ -6,7 +6,7 @@ ensure_brew() {
     if [ -x "$1"/bin/brew ]
     then
         info "found existing Homebrew installation, ensuring shellenv"
-        eval "$("$1"/bin/brew shellenv)"
+        eval "$("$1"/bin/brew shellenv sh)"
     fi
 
     if ! command -v brew >/dev/null 2>&1
@@ -25,7 +25,7 @@ ensure_brew() {
         printf "\n"
         sudo -v
         NONINTERACTIVE=1 ./install.sh || abort "Failed to run homebrew installer"
-        eval "$("$1"/bin/brew shellenv)"
+        eval "$("$1"/bin/brew shellenv sh)"
     fi
 
     cd "$WORKDIR" || exit
